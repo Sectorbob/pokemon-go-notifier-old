@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sectorbob.gaming.pokemon.config.AppConfig;
 import sectorbob.gaming.pokemon.model.Pokemon;
+import sectorbob.gaming.pokemon.util.Util;
 
 /**
  * Created by ltm688 on 7/24/16.
@@ -34,7 +35,7 @@ public class TwilioClient {
             params.add(new BasicNameValuePair("To", recipient));
             params.add(new BasicNameValuePair("From", appConfig.getTwilio().getSenderNumber()));
             params.add(new BasicNameValuePair("Body", pokemon.getName() + " spotted. expires at " +
-                    new Date(pokemon.getExpiryMillis()) + " here: " + generateGoogleMapsLink(pokemon)
+                    Util.getExpiryTime(pokemon.getExpiryMillis()) + " Near  " + pokemon.getGeneralLocation() + " " + Util.generateGoogleMapsLink(pokemon)
             ));
 
             MessageFactory messageFactory = client.getAccount().getMessageFactory();
@@ -42,21 +43,5 @@ public class TwilioClient {
             System.out.println(message.getSid());
         }
 
-    }
-
-
-    public static String generateGoogleMapsLink(Pokemon pokemon) {
-        StringBuilder s = new StringBuilder();
-
-        s.append("http://maps.google.com/maps?z=12&t=m&q=loc:").append(round(pokemon.getLat())).append("+")
-                .append(round(pokemon.getLng()));
-
-        return s.toString();
-    }
-
-    public static String round(double d) {
-        DecimalFormat df = new DecimalFormat("#.#######");
-        df.setRoundingMode(RoundingMode.CEILING);
-        return df.format(d);
     }
 }
