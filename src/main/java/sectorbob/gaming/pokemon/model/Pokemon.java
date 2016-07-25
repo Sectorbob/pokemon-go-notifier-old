@@ -5,6 +5,7 @@ import POGOProtos.Map.Pokemon.NearbyPokemonOuterClass;
 import POGOProtos.Map.Pokemon.WildPokemonOuterClass;
 import com.pokegoapi.api.map.pokemon.NearbyPokemon;
 import org.joda.time.Duration;
+import sectorbob.gaming.pokemon.util.Util;
 
 import java.util.Date;
 
@@ -19,6 +20,7 @@ public class Pokemon {
     long encounterId;
     long expiryMillis;
     String generalLocation;
+    String link;
 
     public Pokemon(WildPokemonOuterClass.WildPokemon pokemon, String generalLocation) {
         setNo(pokemon.getPokemonData().getPokemonId().getNumber());
@@ -28,6 +30,7 @@ public class Pokemon {
         setEncounterId(pokemon.getEncounterId());
         setExpiryMillis(System.currentTimeMillis() + pokemon.getTimeTillHiddenMs());
         setGeneralLocation(generalLocation);
+        setLink(Util.generateGoogleMapsLink(this));
     }
 
     public Pokemon(MapPokemonOuterClass.MapPokemon pokemon, String generalLocation) {
@@ -39,6 +42,7 @@ public class Pokemon {
         setExpiryMillis(pokemon.getExpirationTimestampMs());
         System.out.println(new Date(pokemon.getExpirationTimestampMs()));
         setGeneralLocation(generalLocation);
+        setLink(Util.generateGoogleMapsLink(this));
     }
 
     public Pokemon(NearbyPokemonOuterClass.NearbyPokemon pokemon, String generalLocation) {
@@ -49,6 +53,7 @@ public class Pokemon {
         setEncounterId(pokemon.getEncounterId());
         setExpiryMillis(Long.MAX_VALUE);
         setGeneralLocation(generalLocation);
+        setLink(Util.generateGoogleMapsLink(this));
     }
 
     public int getNo() {
@@ -107,12 +112,21 @@ public class Pokemon {
         this.generalLocation = generalLocation;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     // Helper Method
 
     public void update(double lat, double lng, long expiryMillis) {
         setLat(lat);
         setLng(lng);
         setExpiryMillis(expiryMillis);
+        setLink(Util.generateGoogleMapsLink(this));
     }
 
     public boolean isFound() {
@@ -148,4 +162,5 @@ public class Pokemon {
 
         return s.toString();
     }
+
 }
