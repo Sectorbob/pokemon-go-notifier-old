@@ -1,9 +1,6 @@
 package sectorbob.gaming.pokemon.sms;
 
 // You may want to be more specific in your imports
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.util.*;
 import com.twilio.sdk.*;
 import com.twilio.sdk.resource.factory.*;
 import com.twilio.sdk.resource.instance.*;
@@ -30,17 +27,22 @@ public class TwilioClient {
         TwilioRestClient client = new TwilioRestClient(appConfig.getTwilio().getAccountSid(),
                 appConfig.getTwilio().getAuthToken());
 
-        for(String recipient : appConfig.getTwilio().getRecipients()) {
+        for(AppConfig.Subscriber subscriber : appConfig.getTwilio().getSubscribers()) {
+            System.out.println("Sending message to " + subscriber);
             List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("To", recipient));
+            params.add(new BasicNameValuePair("To", subscriber.getNumber()));
             params.add(new BasicNameValuePair("From", appConfig.getTwilio().getSenderNumber()));
             params.add(new BasicNameValuePair("Body", pokemon.getName() + " spotted. expires at " +
                     Util.getExpiryTime(pokemon.getExpiryMillis()) + " Near  " + pokemon.getGeneralLocation() + " " + Util.generateGoogleMapsLink(pokemon)
             ));
 
             MessageFactory messageFactory = client.getAccount().getMessageFactory();
-            Message message = messageFactory.create(params);
-            System.out.println(message.getSid());
+            try {
+                Message message = messageFactory.create(params);
+                System.out.println("SMS Message Sent to " + subscriber + ", SID:" + message.getSid());
+            } catch (TwilioRestException e) {
+                System.err.println("Unable to sent SMS message to " + subscriber + " Error:" + e.getErrorMessage());
+            }
         }
 
     }
