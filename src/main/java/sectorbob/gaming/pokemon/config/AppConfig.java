@@ -196,7 +196,7 @@ public class AppConfig {
         String accountSid;
         String authToken;
         String senderNumber;
-        List<String> recipients;
+        List<Subscriber> subscribers;
 
         public String getAccountSid() {
             return accountSid;
@@ -222,12 +222,39 @@ public class AppConfig {
             this.senderNumber = senderNumber;
         }
 
-        public List<String> getRecipients() {
-            return recipients;
+        public List<Subscriber> getSubscribers() {
+            return subscribers;
         }
 
-        public void setRecipients(List<String> recipients) {
-            this.recipients = recipients;
+        public void setSubscribers(List<Subscriber> subscribers) {
+            this.subscribers = subscribers;
+        }
+    }
+
+    public static class Subscriber {
+        String name;
+        String number;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getNumber() {
+            return number;
+        }
+
+        public void setNumber(String number) {
+            this.number = number;
+        }
+
+        public String toString() {
+            StringBuilder s = new StringBuilder();
+            s.append("(").append(this.getName()).append(",").append(this.getNumber()).append(")");
+            return s.toString();
         }
     }
 }
