@@ -26,6 +26,7 @@ import sectorbob.gaming.pokemon.model.Pokemon;
 import sectorbob.gaming.pokemon.model.SoughtAfterPokemon;
 import sectorbob.gaming.pokemon.repo.SoughtAfterPokemonRepository;
 import sectorbob.gaming.pokemon.repo.WildPokemonRepository;
+import sectorbob.gaming.pokemon.sms.EmailClient;
 import sectorbob.gaming.pokemon.sms.TwilioClient;
 
 @Component
@@ -39,6 +40,9 @@ public class ScheduledTasks {
 
     @Autowired
     TwilioClient twilioClient;
+
+    @Autowired
+    EmailClient emailClient;
 
     @Autowired
     AppConfig appConfig;
@@ -107,7 +111,11 @@ public class ScheduledTasks {
     public void detectNewSoughtPokemon() throws TwilioRestException {
         for(Pokemon pokemon : wildPokemonRepository.getAll()) {
             if(pokemonIsSoughtAfter(pokemon) && ! soughtAfterPokemonRepository.notificationSentForPokemon(pokemon)) {
-                twilioClient.send(pokemon);
+
+                for(AppConfig.Subscriber subscriber : appConfig.getSubscribers()) {
+                    emailClient.send(pokemon, subscriber);
+                }
+
                 SoughtAfterPokemon soughtAfterPokemon = new SoughtAfterPokemon();
                 soughtAfterPokemon.setNotificationSent(true);
                 soughtAfterPokemon.setPokemon(pokemon);
