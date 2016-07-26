@@ -12,15 +12,16 @@ import java.util.List;
 /**
  * Created by ltm688 on 7/24/16.
  */
-@RestController
+//@RestController
 public class MyWildPokemonController {
 
-    @Autowired
+    //@Autowired
     WildPokemonRepository wildPokemonRepository;
 
     @RequestMapping(value="/pokemon", method = RequestMethod.GET)
     public List<Pokemon> getPokemon() {
-        return wildPokemonRepository.getAll();
+        //return wildPokemonRepository.getAll();
+        return null;
     }
 
 }
