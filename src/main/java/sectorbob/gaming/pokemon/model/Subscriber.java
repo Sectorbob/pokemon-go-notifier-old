@@ -4,6 +4,7 @@ import sectorbob.gaming.pokemon.config.AppConfig;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import java.util.List;
 
@@ -18,9 +19,9 @@ public class Subscriber {
     String name;
     String contact;
     String carrier;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     List<String> locationsOfInterest;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     List<String> pokemonOfInterest;
 
     public String getUsername() {
