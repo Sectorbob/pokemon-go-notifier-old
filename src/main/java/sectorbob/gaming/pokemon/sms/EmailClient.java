@@ -1,0 +1,130 @@
+package sectorbob.gaming.pokemon.sms;
+
+
+import sectorbob.gaming.pokemon.config.AppConfig;
+import sectorbob.gaming.pokemon.model.Pokemon;
+import sectorbob.gaming.pokemon.util.Util;
+
+import javax.mail.*;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.util.Properties;
+
+/**
+ * Created by ltm688 on 7/26/16.
+ */
+public class EmailClient {
+
+    private String fromEmail;
+    private String username;
+    private String password;
+    private Properties props;
+
+    Session session;
+    Transport transport;
+
+    public EmailClient(String user, final String password) throws MessagingException {
+        this.fromEmail = user + "@gmail.com";
+        this.username = user;
+        this.password = password;
+
+        props = System.getProperties();
+        //props.put("mail.smtp.starttls.enable", true); // added this line
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.user", fromEmail);
+        props.put("mail.smtp.password", password);
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.auth", "true");
+
+
+        Authenticator auth = new Authenticator() {
+            //override the getPasswordAuthentication method
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(fromEmail, password);
+            }
+        };
+
+        session = Session.getDefaultInstance(props, auth);
+
+        transport = session.getTransport("smtp");
+
+        transport.connect("smtp.gmail.com", username, password);
+    }
+
+    public void send(Pokemon pokemon, AppConfig.Subscriber subscriber) {
+        String message = pokemon.getName() + " spotted. expires at " +
+                Util.getExpiryTime(pokemon.getExpiryMillis()) + " near " + pokemon.getGeneralLocation() + " " + Util.generateGoogleMapsLink(pokemon);
+
+        send("", message, getEmailForPhoneNumber(subscriber.getNumber(), subscriber.getCarrier()));
+    }
+
+    public void send(String subject, String messageBody, String recipient) {
+
+        MimeMessage message = new MimeMessage(session);
+
+        System.out.println("Port: " + session.getProperty("mail.smtp.port"));
+
+        // Create the email addresses involved
+        try {
+            InternetAddress from = new InternetAddress(fromEmail);
+
+            message.setSubject(subject);
+            message.setFrom(from);
+            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+
+            // Create a multi-part to combine the parts
+            Multipart multipart = new MimeMultipart("alternative");
+
+            // Create your text message part
+            BodyPart messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setText(messageBody);
+
+            // Add the text part to the multipart
+            multipart.addBodyPart(messageBodyPart);
+
+            // Create the html part
+            messageBodyPart = new MimeBodyPart();
+            String htmlMessage = "Our html text";
+            messageBodyPart.setContent(htmlMessage, "text/html");
+
+            // Add html part to multi part
+            multipart.addBodyPart(messageBodyPart);
+
+            // Associate multi-part with message
+            message.setContent(multipart);
+
+            // Send message
+            transport.sendMessage(message, message.getAllRecipients());
+
+
+        } catch (AddressException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (MessagingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+
+    public static String getEmailForPhoneNumber(String number, PhoneCarrier provider) {
+        switch(provider) {
+            case T_MOBILE:
+                return number + "@tmomail.net";
+            case ATT:
+                return number + "@txt.att.net";
+            case VERIZON:
+                return number + "@vtext.com";
+            case SPRINT:
+                return number + "@messaging.sprintpcs.com";
+            case CRICKET:
+                return number + "@sms.mycricket.com";
+            default:
+                return number;
+        }
+    }
+}
