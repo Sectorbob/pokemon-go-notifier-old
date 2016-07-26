@@ -27,7 +27,7 @@ public class TwilioClient {
         TwilioRestClient client = new TwilioRestClient(appConfig.getTwilio().getAccountSid(),
                 appConfig.getTwilio().getAuthToken());
 
-        for(AppConfig.Subscriber subscriber : appConfig.getTwilio().getSubscribers()) {
+        for(AppConfig.Subscriber subscriber : appConfig.getSubscribers()) {
             System.out.println("Sending message to " + subscriber);
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             params.add(new BasicNameValuePair("To", subscriber.getNumber()));

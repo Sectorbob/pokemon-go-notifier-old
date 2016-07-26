@@ -1,5 +1,7 @@
 package sectorbob.gaming.pokemon.config;
 
+import sectorbob.gaming.pokemon.sms.PhoneCarrier;
+
 import java.util.List;
 
 /**
@@ -7,6 +9,7 @@ import java.util.List;
  */
 public class AppConfig {
 
+    Email email;
     String googleMapsApiToken;
     String pogoAuthType;
     String pogoUsername;
@@ -15,10 +18,17 @@ public class AppConfig {
     List<String> seekPokemon;
     List<String> ignorePokemon;
     int pollFrequencyMillis;
-
     DistanceSettings distanceSettings;
-
+    List<Subscriber> subscribers;
     Twilio twilio;
+
+    public Email getEmail() {
+        return email;
+    }
+
+    public void setEmail(Email email) {
+        this.email = email;
+    }
 
     public String getGoogleMapsApiToken() {
         return googleMapsApiToken;
@@ -102,6 +112,14 @@ public class AppConfig {
         public void setWildPokemonMaxRadius(Double wildPokemonMaxRadius) {
             this.wildPokemonMaxRadius = wildPokemonMaxRadius;
         }
+    }
+
+    public List<Subscriber> getSubscribers() {
+        return subscribers;
+    }
+
+    public void setSubscribers(List<Subscriber> subscribers) {
+        this.subscribers = subscribers;
     }
 
     public Twilio getTwilio() {
@@ -192,11 +210,31 @@ public class AppConfig {
         }
     }
 
+    public static class Email {
+        String user;
+        String password;
+
+        public String getUser() {
+            return user;
+        }
+
+        public void setUser(String user) {
+            this.user = user;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+
     public static class Twilio {
         String accountSid;
         String authToken;
         String senderNumber;
-        List<Subscriber> subscribers;
 
         public String getAccountSid() {
             return accountSid;
@@ -221,19 +259,12 @@ public class AppConfig {
         public void setSenderNumber(String senderNumber) {
             this.senderNumber = senderNumber;
         }
-
-        public List<Subscriber> getSubscribers() {
-            return subscribers;
-        }
-
-        public void setSubscribers(List<Subscriber> subscribers) {
-            this.subscribers = subscribers;
-        }
     }
 
     public static class Subscriber {
         String name;
         String number;
+        PhoneCarrier carrier;
 
         public String getName() {
             return name;
@@ -249,6 +280,14 @@ public class AppConfig {
 
         public void setNumber(String number) {
             this.number = number;
+        }
+
+        public PhoneCarrier getCarrier() {
+            return carrier;
+        }
+
+        public void setCarrier(PhoneCarrier carrier) {
+            this.carrier = carrier;
         }
 
         public String toString() {
