@@ -22,12 +22,17 @@ import org.springframework.stereotype.Component;
 import sectorbob.gaming.pokemon.config.AppConfig;
 import sectorbob.gaming.pokemon.model.Pokemon;
 import sectorbob.gaming.pokemon.model.SoughtAfterPokemon;
+import sectorbob.gaming.pokemon.model.Subscriber;
 import sectorbob.gaming.pokemon.repo.SoughtAfterPokemonRepository;
+import sectorbob.gaming.pokemon.repo.SubscriberRepository;
 import sectorbob.gaming.pokemon.repo.WildPokemonRepository;
 import sectorbob.gaming.pokemon.sms.EmailClient;
 
-@Component
+//@Component
 public class ScheduledTasks {
+
+    @Autowired
+    SubscriberRepository subscriberRepository;
 
     @Autowired
     WildPokemonRepository wildPokemonRepository;
@@ -122,7 +127,7 @@ public class ScheduledTasks {
 
             if(soughtAfterPokemonRepository.notificationSentForPokemon(pokemon.getEncounterId()) == null) {
                 // notifications have not been sent yet for this pokemon
-                for(AppConfig.Subscriber subscriber : appConfig.getSubscribers()) {
+                for(Subscriber subscriber : subscriberRepository.findAll()) {
                     // Check if notification should be sne t for this pokemon to this subscriber
                     if(subscriber.interestedIn(pokemon)) {
                         emailClient.send(pokemon, subscriber);
@@ -152,15 +157,11 @@ public class ScheduledTasks {
 
     public List<Pokemon> getWildPokemon(AppConfig.Local local, AppConfig.Location location) throws LoginFailedException, RemoteServerException {
         go.setLocation(location.getLatitude(), location.getLongitude(), location.getAltitude());
-        try { Thread.sleep(100); } catch (InterruptedException e) { }
+        try { Thread.sleep(appConfig.getBufferBetweenMovesMillis()); } catch (InterruptedException e) { }
 
         List<Pokemon> wildPokemon = new ArrayList<Pokemon>();
 
         for (WildPokemonOuterClass.WildPokemon pokemon : go.getMap().getMapObjects().getWildPokemons()) {
-            //for (MapPokemonOuterClass.MapPokemon pokemon : go.getMap().getMapObjects().getCatchablePokemons()) {
-            //for (NearbyPokemonOuterClass.NearbyPokemon pokemon : go.getMap().getMapObjects().getNearbyPokemons()) {
-            //System.out.println("Catchable Distance: " + distance(location.getLatitude(), pokemon.getLatitude(),
-            //        location.getLongitude(), pokemon.getLongitude(), 0.0, 0.0) + "m");
             Pokemon pokemon1 = new Pokemon(pokemon, local.getName());
             wildPokemon.add(pokemon1);
         }
