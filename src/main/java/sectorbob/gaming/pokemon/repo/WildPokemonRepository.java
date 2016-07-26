@@ -14,4 +14,12 @@ public interface WildPokemonRepository extends JpaRepository<Pokemon, Long> {
 
     List<Pokemon> findByExpired(boolean expired);
 
+    List<Pokemon> findByName(String name);
+
+    List<Pokemon> findByExpiredAndName(boolean expired, String name);
+
+    List<Pokemon> findByGeneralLocation(String generalLocation);
+
+    List<Pokemon> findByExpiredAndGeneralLocation(boolean expired, String generalLocation);
+
 }
