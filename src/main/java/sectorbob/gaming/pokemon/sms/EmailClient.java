@@ -1,8 +1,7 @@
 package sectorbob.gaming.pokemon.sms;
 
-
-import sectorbob.gaming.pokemon.config.AppConfig;
 import sectorbob.gaming.pokemon.model.Pokemon;
+import sectorbob.gaming.pokemon.model.Subscriber;
 import sectorbob.gaming.pokemon.util.Util;
 
 import javax.mail.*;
@@ -55,7 +54,7 @@ public class EmailClient {
         transport.connect("smtp.gmail.com", username, password);
     }
 
-    public void send(Pokemon pokemon, AppConfig.Subscriber subscriber) {
+    public void send(Pokemon pokemon, Subscriber subscriber) {
         String message = pokemon.getName() + " spotted. expires at " +
                 Util.getExpiryTime(pokemon.getExpiryMillis()) + " near " + pokemon.getGeneralLocation() + " " + Util.generateGoogleMapsLink(pokemon);
 
@@ -113,17 +112,17 @@ public class EmailClient {
     }
 
 
-    public static String getEmailForContact(String contact, PhoneCarrier provider) {
+    public static String getEmailForContact(String contact, String provider) {
         switch(provider) {
-            case T_MOBILE:
+            case "T_MOBILE":
                 return contact + "@tmomail.net";
-            case ATT:
+            case "ATT":
                 return contact + "@txt.att.net";
-            case VERIZON:
+            case "VERIZON":
                 return contact + "@vtext.com";
-            case SPRINT:
+            case "SPRINT":
                 return contact + "@messaging.sprintpcs.com";
-            case CRICKET:
+            case "CRICKET":
                 return contact + "@sms.mycricket.com";
             default:
                 return contact;
