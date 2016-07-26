@@ -28,7 +28,7 @@ import sectorbob.gaming.pokemon.repo.SubscriberRepository;
 import sectorbob.gaming.pokemon.repo.WildPokemonRepository;
 import sectorbob.gaming.pokemon.sms.EmailClient;
 
-//@Component
+@Component
 public class ScheduledTasks {
 
     @Autowired
