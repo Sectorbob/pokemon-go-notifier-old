@@ -76,8 +76,8 @@ public class ScheduledTasks {
 
 
                     for(Pokemon pokemon : findNearbyPokemon(local, location)) {
-                        boolean inserted = wildPokemonRepository.insert(pokemon);
-                        if(inserted) {
+                        if( ! wildPokemonRepository.exists(pokemon.getEncounterId())) {
+                            wildPokemonRepository.save(pokemon);
                             System.out.println("New Nearby Pokemon: " + pokemon);
                         }
                     }
@@ -92,7 +92,7 @@ public class ScheduledTasks {
                 + cycleDuration.getStandardSeconds() % 60 + "s");
 
         System.out.println("Catchable Pokemon:");
-        for(Pokemon pokemon : wildPokemonRepository.getAll()) {
+        for(Pokemon pokemon : wildPokemonRepository.findByExpired(false)) {
             if(! ignorePokemon(pokemon))
                 System.out.println(pokemon);
         }
@@ -101,25 +101,34 @@ public class ScheduledTasks {
 
     @Scheduled(fixedRate = 1000)
     public void removeExpiredWildPokemon() {
-        List<Pokemon> expired = wildPokemonRepository.removeExpiredPokemon();
-        if(!expired.isEmpty()) {
-            System.out.println("Removed " + expired.size() + " expired pokemon.");
+        List<Pokemon> expiredPokemon = new ArrayList<Pokemon>();
+
+        for(Pokemon wildPokemon : wildPokemonRepository.findByExpired(false)) {
+            if(wildPokemon.getExpiryMillis() < System.currentTimeMillis()) {
+                wildPokemon.setExpired(true);
+                expiredPokemon.add(wildPokemon);
+            }
+        }
+
+        // Update database
+        if(!expiredPokemon.isEmpty()) {
+            wildPokemonRepository.save(expiredPokemon);
+            System.out.println("Removed " + expiredPokemon.size() + " expired pokemon.");
         }
     }
 
     @Scheduled(fixedRate = 5000)
     public void detectNewSoughtPokemon() throws TwilioRestException {
-        for(Pokemon pokemon : wildPokemonRepository.getAll()) {
-            if(pokemonIsSoughtAfter(pokemon) && ! soughtAfterPokemonRepository.notificationSentForPokemon(pokemon)) {
+        for(Pokemon pokemon : wildPokemonRepository.findByExpired(false)) {
+            if(pokemonIsSoughtAfter(pokemon) && soughtAfterPokemonRepository.notificationSentForPokemon(pokemon.getEncounterId()) == null) {
 
                 for(AppConfig.Subscriber subscriber : appConfig.getSubscribers()) {
                     emailClient.send(pokemon, subscriber);
                 }
 
-                SoughtAfterPokemon soughtAfterPokemon = new SoughtAfterPokemon();
+                SoughtAfterPokemon soughtAfterPokemon = new SoughtAfterPokemon(pokemon);
                 soughtAfterPokemon.setNotificationSent(true);
-                soughtAfterPokemon.setPokemon(pokemon);
-                soughtAfterPokemonRepository.add(soughtAfterPokemon);
+                soughtAfterPokemonRepository.save(soughtAfterPokemon);
             }
         }
     }

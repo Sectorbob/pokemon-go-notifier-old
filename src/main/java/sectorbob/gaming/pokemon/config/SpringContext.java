@@ -6,6 +6,8 @@ import sectorbob.gaming.pokemon.sms.EmailClient;
 
 import javax.mail.MessagingException;
 import java.io.FileNotFoundException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by ltm688 on 7/24/16.
@@ -34,6 +36,11 @@ public class SpringContext {
         } else {
             return emailClient;
         }
+    }
+
+    @Bean(destroyMethod = "shutdown")
+    public Executor taskScheduler() {
+        return Executors.newScheduledThreadPool(3);
     }
 
 }
