@@ -1,30 +1,15 @@
 package sectorbob.gaming.pokemon.repo;
 
-import org.springframework.stereotype.Component;
-import sectorbob.gaming.pokemon.model.Pokemon;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import sectorbob.gaming.pokemon.model.SoughtAfterPokemon;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ltm688 on 7/25/16.
  */
-@Component
-public class SoughtAfterPokemonRepository {
+public interface SoughtAfterPokemonRepository extends JpaRepository<SoughtAfterPokemon, Long> {
 
-    private List<SoughtAfterPokemon> soughtAfterPokemons = new ArrayList<SoughtAfterPokemon>();
-
-    public void add(SoughtAfterPokemon soughtAfterPokemon) {
-        soughtAfterPokemons.add(soughtAfterPokemon);
-    }
-
-    public boolean notificationSentForPokemon(Pokemon pokemon) {
-        for(SoughtAfterPokemon soughtAfterPokemon : soughtAfterPokemons) {
-            if(soughtAfterPokemon.getPokemon().equals(pokemon) && soughtAfterPokemon.isNotificationSent()) {
-                return true;
-            }
-        }
-        return false;
-    }
+    @Query(value = "SELECT p FROM SoughtAfterPokemon p WHERE p.notificationSent = true AND p.encounterId = :encounterId")
+    SoughtAfterPokemon notificationSentForPokemon(@Param("encounterId") Long encounterId);
 }

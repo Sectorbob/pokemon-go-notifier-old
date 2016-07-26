@@ -3,24 +3,30 @@ package sectorbob.gaming.pokemon.model;
 import POGOProtos.Map.Pokemon.MapPokemonOuterClass;
 import POGOProtos.Map.Pokemon.NearbyPokemonOuterClass;
 import POGOProtos.Map.Pokemon.WildPokemonOuterClass;
-import com.pokegoapi.api.map.pokemon.NearbyPokemon;
 import org.joda.time.Duration;
 import sectorbob.gaming.pokemon.util.Util;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.Date;
 
 /**
  * Created by ltm688 on 7/24/16.
  */
+@Entity
 public class Pokemon {
+    @Id
+    long encounterId;
     int no;
     String name;
     Double lat;
     Double lng;
-    long encounterId;
     long expiryMillis;
     String generalLocation;
     String link;
+    boolean expired;
+
+    public Pokemon() {}
 
     public Pokemon(WildPokemonOuterClass.WildPokemon pokemon, String generalLocation) {
         setNo(pokemon.getPokemonData().getPokemonId().getNumber());
@@ -31,6 +37,7 @@ public class Pokemon {
         setExpiryMillis(System.currentTimeMillis() + pokemon.getTimeTillHiddenMs());
         setGeneralLocation(generalLocation);
         setLink(Util.generateGoogleMapsLink(this));
+        setExpired(false);
     }
 
     public Pokemon(MapPokemonOuterClass.MapPokemon pokemon, String generalLocation) {
@@ -43,6 +50,7 @@ public class Pokemon {
         System.out.println(new Date(pokemon.getExpirationTimestampMs()));
         setGeneralLocation(generalLocation);
         setLink(Util.generateGoogleMapsLink(this));
+        setExpired(false);
     }
 
     public Pokemon(NearbyPokemonOuterClass.NearbyPokemon pokemon, String generalLocation) {
@@ -54,6 +62,7 @@ public class Pokemon {
         setExpiryMillis(Long.MAX_VALUE);
         setGeneralLocation(generalLocation);
         setLink(Util.generateGoogleMapsLink(this));
+        setExpired(false);
     }
 
     public int getNo() {
@@ -118,6 +127,14 @@ public class Pokemon {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
     }
 
     // Helper Method
