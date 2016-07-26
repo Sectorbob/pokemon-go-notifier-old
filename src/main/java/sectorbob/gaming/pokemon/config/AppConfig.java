@@ -1,5 +1,6 @@
 package sectorbob.gaming.pokemon.config;
 
+import sectorbob.gaming.pokemon.model.Pokemon;
 import sectorbob.gaming.pokemon.sms.PhoneCarrier;
 
 import java.util.List;
@@ -15,7 +16,6 @@ public class AppConfig {
     String pogoUsername;
     String pogoPassword;
     List<Local> locals;
-    List<String> seekPokemon;
     List<String> ignorePokemon;
     int pollFrequencyMillis;
     DistanceSettings distanceSettings;
@@ -68,14 +68,6 @@ public class AppConfig {
 
     public void setLocals(List<Local> locals) {
         this.locals = locals;
-    }
-
-    public List<String> getSeekPokemon() {
-        return seekPokemon;
-    }
-
-    public void setSeekPokemon(List<String> seekPokemon) {
-        this.seekPokemon = seekPokemon;
     }
 
     public List<String> getIgnorePokemon() {
@@ -263,8 +255,10 @@ public class AppConfig {
 
     public static class Subscriber {
         String name;
-        String number;
+        String contact;
         PhoneCarrier carrier;
+        List<String> locations;
+        List<String> pokemonOfInterest;
 
         public String getName() {
             return name;
@@ -274,12 +268,12 @@ public class AppConfig {
             this.name = name;
         }
 
-        public String getNumber() {
-            return number;
+        public String getContact() {
+            return contact;
         }
 
-        public void setNumber(String number) {
-            this.number = number;
+        public void setContact(String contact) {
+            this.contact = contact;
         }
 
         public PhoneCarrier getCarrier() {
@@ -290,10 +284,38 @@ public class AppConfig {
             this.carrier = carrier;
         }
 
+        public List<String> getLocations() {
+            return locations;
+        }
+
+        public void setLocations(List<String> locations) {
+            this.locations = locations;
+        }
+
+        public List<String> getPokemonOfInterest() {
+            return pokemonOfInterest;
+        }
+
+        public void setPokemonOfInterest(List<String> pokemonOfInterest) {
+            this.pokemonOfInterest = pokemonOfInterest;
+        }
+
         public String toString() {
             StringBuilder s = new StringBuilder();
-            s.append("(").append(this.getName()).append(",").append(this.getNumber()).append(")");
+            s.append("(").append(this.getName()).append(",").append(this.getContact()).append(")");
             return s.toString();
+        }
+
+        public boolean interestedIn(Pokemon pokemon) {
+            return interestedInArea(pokemon.getGeneralLocation()) && interestedInPokemon(pokemon.getName());
+        }
+
+        private boolean interestedInArea(String area) {
+            return this.getLocations().contains(area) || this.getLocations().contains("all");
+        }
+
+        private boolean interestedInPokemon(String name) {
+            return this.getPokemonOfInterest().contains(name) || this.getPokemonOfInterest().contains("all");
         }
     }
 }
