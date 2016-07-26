@@ -59,14 +59,16 @@ public class EmailClient {
         String message = pokemon.getName() + " spotted. expires at " +
                 Util.getExpiryTime(pokemon.getExpiryMillis()) + " near " + pokemon.getGeneralLocation() + " " + Util.generateGoogleMapsLink(pokemon);
 
-        send("", message, getEmailForPhoneNumber(subscriber.getNumber(), subscriber.getCarrier()));
+        String email =  getEmailForContact(subscriber.getContact(), subscriber.getCarrier());
+
+        System.out.println("Notifying " + email + " about " + pokemon);
+
+        send("", message, email);
     }
 
     public void send(String subject, String messageBody, String recipient) {
 
         MimeMessage message = new MimeMessage(session);
-
-        System.out.println("Port: " + session.getProperty("mail.smtp.port"));
 
         // Create the email addresses involved
         try {
@@ -111,20 +113,20 @@ public class EmailClient {
     }
 
 
-    public static String getEmailForPhoneNumber(String number, PhoneCarrier provider) {
+    public static String getEmailForContact(String contact, PhoneCarrier provider) {
         switch(provider) {
             case T_MOBILE:
-                return number + "@tmomail.net";
+                return contact + "@tmomail.net";
             case ATT:
-                return number + "@txt.att.net";
+                return contact + "@txt.att.net";
             case VERIZON:
-                return number + "@vtext.com";
+                return contact + "@vtext.com";
             case SPRINT:
-                return number + "@messaging.sprintpcs.com";
+                return contact + "@messaging.sprintpcs.com";
             case CRICKET:
-                return number + "@sms.mycricket.com";
+                return contact + "@sms.mycricket.com";
             default:
-                return number;
+                return contact;
         }
     }
 }
