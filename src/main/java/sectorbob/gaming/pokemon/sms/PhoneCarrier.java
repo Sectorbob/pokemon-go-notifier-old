@@ -8,5 +8,6 @@ public enum PhoneCarrier {
     T_MOBILE,
     ATT,
     SPRINT,
-    CRICKET
+    CRICKET,
+    N_A
 }

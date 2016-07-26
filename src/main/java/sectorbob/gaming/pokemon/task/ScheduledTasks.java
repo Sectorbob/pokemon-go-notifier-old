@@ -4,12 +4,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import POGOProtos.Map.Pokemon.MapPokemonOuterClass;
 import POGOProtos.Map.Pokemon.NearbyPokemonOuterClass;
 import POGOProtos.Map.Pokemon.WildPokemonOuterClass;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PlacesApi;
-import com.google.maps.model.LatLng;
 import com.google.maps.model.PlacesSearchResult;
 import com.pokegoapi.api.PokemonGo;
 import com.pokegoapi.auth.GoogleLogin;
@@ -27,7 +25,6 @@ import sectorbob.gaming.pokemon.model.SoughtAfterPokemon;
 import sectorbob.gaming.pokemon.repo.SoughtAfterPokemonRepository;
 import sectorbob.gaming.pokemon.repo.WildPokemonRepository;
 import sectorbob.gaming.pokemon.sms.EmailClient;
-import sectorbob.gaming.pokemon.sms.TwilioClient;
 
 @Component
 public class ScheduledTasks {
@@ -37,9 +34,6 @@ public class ScheduledTasks {
 
     @Autowired
     SoughtAfterPokemonRepository soughtAfterPokemonRepository;
-
-    @Autowired
-    TwilioClient twilioClient;
 
     @Autowired
     EmailClient emailClient;
@@ -120,12 +114,23 @@ public class ScheduledTasks {
     @Scheduled(fixedRate = 5000)
     public void detectNewSoughtPokemon() throws TwilioRestException {
         for(Pokemon pokemon : wildPokemonRepository.findByExpired(false)) {
-            if(pokemonIsSoughtAfter(pokemon) && soughtAfterPokemonRepository.notificationSentForPokemon(pokemon.getEncounterId()) == null) {
+            // Check all active pokemon except for ignored pokemon
 
+            if(ignorePokemon(pokemon)) {
+                continue;
+            }
+
+            if(soughtAfterPokemonRepository.notificationSentForPokemon(pokemon.getEncounterId()) == null) {
+                // notifications have not been sent yet for this pokemon
                 for(AppConfig.Subscriber subscriber : appConfig.getSubscribers()) {
-                    emailClient.send(pokemon, subscriber);
+                    // Check if notification should be sne t for this pokemon to this subscriber
+                    if(subscriber.interestedIn(pokemon)) {
+                        emailClient.send(pokemon, subscriber);
+                    }
+
                 }
 
+                // Update the database to say that this pokemon has already been notified for
                 SoughtAfterPokemon soughtAfterPokemon = new SoughtAfterPokemon(pokemon);
                 soughtAfterPokemon.setNotificationSent(true);
                 soughtAfterPokemonRepository.save(soughtAfterPokemon);
@@ -242,20 +247,11 @@ public class ScheduledTasks {
 
     public void addNewWildPokemon(List<Pokemon> nearbyPokemon, AppConfig.Location location, AppConfig.Local local, String area) throws LoginFailedException, RemoteServerException {
         for(Pokemon wildPokemon : getWildPokemon(local, location)) {
-            if(! nearbyPokemon.contains(wildPokemon)) {
+            if (!nearbyPokemon.contains(wildPokemon)) {
                 nearbyPokemon.add(wildPokemon);
                 //System.out.println("Added " + wildPokemon.getName() + " from " + area + " in " + local.getName());
             }
         }
-    }
-
-    public boolean pokemonIsSoughtAfter(Pokemon pokemon) {
-        for(String soughtPokemonName : appConfig.getSeekPokemon()) {
-            if(soughtPokemonName.equals(pokemon.getName())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public PlacesSearchResult getLocation(String location) throws Exception {
