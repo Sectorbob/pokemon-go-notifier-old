@@ -1,8 +1,5 @@
 package sectorbob.gaming.pokemon.config;
 
-import sectorbob.gaming.pokemon.model.Pokemon;
-import sectorbob.gaming.pokemon.sms.PhoneCarrier;
-
 import java.util.List;
 
 /**
@@ -12,15 +9,13 @@ public class AppConfig {
 
     Email email;
     String googleMapsApiToken;
-    String pogoAuthType;
-    String pogoUsername;
-    String pogoPassword;
+    PokemonGoLogin pogoAccount1;
+    PokemonGoLogin pogoAccount2;
     List<Local> locals;
     List<String> ignorePokemon;
     int pollFrequencyMillis;
+    int bufferBetweenMovesMillis;
     DistanceSettings distanceSettings;
-    List<Subscriber> subscribers;
-    Twilio twilio;
 
     public Email getEmail() {
         return email;
@@ -38,28 +33,20 @@ public class AppConfig {
         this.googleMapsApiToken = googleMapsApiToken;
     }
 
-    public String getPogoAuthType() {
-        return pogoAuthType;
+    public PokemonGoLogin getPogoAccount2() {
+        return pogoAccount2;
     }
 
-    public void setPogoAuthType(String pogoAuthType) {
-        this.pogoAuthType = pogoAuthType;
+    public void setPogoAccount2(PokemonGoLogin pogoAccount2) {
+        this.pogoAccount2 = pogoAccount2;
     }
 
-    public String getPogoUsername() {
-        return pogoUsername;
+    public PokemonGoLogin getPogoAccount1() {
+        return pogoAccount1;
     }
 
-    public void setPogoUsername(String pogoUsername) {
-        this.pogoUsername = pogoUsername;
-    }
-
-    public String getPogoPassword() {
-        return pogoPassword;
-    }
-
-    public void setPogoPassword(String pogoPassword) {
-        this.pogoPassword = pogoPassword;
+    public void setPogoAccount1(PokemonGoLogin pogoAccount1) {
+        this.pogoAccount1 = pogoAccount1;
     }
 
     public List<Local> getLocals() {
@@ -76,6 +63,14 @@ public class AppConfig {
 
     public void setIgnorePokemon(List<String> ignorePokemon) {
         this.ignorePokemon = ignorePokemon;
+    }
+
+    public int getBufferBetweenMovesMillis() {
+        return bufferBetweenMovesMillis;
+    }
+
+    public void setBufferBetweenMovesMillis(int bufferBetweenMovesMillis) {
+        this.bufferBetweenMovesMillis = bufferBetweenMovesMillis;
     }
 
     public int getPollFrequencyMillis() {
@@ -106,20 +101,34 @@ public class AppConfig {
         }
     }
 
-    public List<Subscriber> getSubscribers() {
-        return subscribers;
-    }
+    public static class PokemonGoLogin {
+        String authType;
+        String username;
+        String password;
 
-    public void setSubscribers(List<Subscriber> subscribers) {
-        this.subscribers = subscribers;
-    }
+        public String getAuthType() {
+            return authType;
+        }
 
-    public Twilio getTwilio() {
-        return twilio;
-    }
+        public void setAuthType(String authType) {
+            this.authType = authType;
+        }
 
-    public void setTwilio(Twilio twilio) {
-        this.twilio = twilio;
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
 
     public static class Local {
@@ -223,99 +232,4 @@ public class AppConfig {
         }
     }
 
-    public static class Twilio {
-        String accountSid;
-        String authToken;
-        String senderNumber;
-
-        public String getAccountSid() {
-            return accountSid;
-        }
-
-        public void setAccountSid(String accountSid) {
-            this.accountSid = accountSid;
-        }
-
-        public String getAuthToken() {
-            return authToken;
-        }
-
-        public void setAuthToken(String authToken) {
-            this.authToken = authToken;
-        }
-
-        public String getSenderNumber() {
-            return senderNumber;
-        }
-
-        public void setSenderNumber(String senderNumber) {
-            this.senderNumber = senderNumber;
-        }
-    }
-
-    public static class Subscriber {
-        String name;
-        String contact;
-        PhoneCarrier carrier;
-        List<String> locations;
-        List<String> pokemonOfInterest;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getContact() {
-            return contact;
-        }
-
-        public void setContact(String contact) {
-            this.contact = contact;
-        }
-
-        public PhoneCarrier getCarrier() {
-            return carrier;
-        }
-
-        public void setCarrier(PhoneCarrier carrier) {
-            this.carrier = carrier;
-        }
-
-        public List<String> getLocations() {
-            return locations;
-        }
-
-        public void setLocations(List<String> locations) {
-            this.locations = locations;
-        }
-
-        public List<String> getPokemonOfInterest() {
-            return pokemonOfInterest;
-        }
-
-        public void setPokemonOfInterest(List<String> pokemonOfInterest) {
-            this.pokemonOfInterest = pokemonOfInterest;
-        }
-
-        public String toString() {
-            StringBuilder s = new StringBuilder();
-            s.append("(").append(this.getName()).append(",").append(this.getContact()).append(")");
-            return s.toString();
-        }
-
-        public boolean interestedIn(Pokemon pokemon) {
-            return interestedInArea(pokemon.getGeneralLocation()) && interestedInPokemon(pokemon.getName());
-        }
-
-        private boolean interestedInArea(String area) {
-            return this.getLocations().contains(area) || this.getLocations().contains("all");
-        }
-
-        private boolean interestedInPokemon(String name) {
-            return this.getPokemonOfInterest().contains(name) || this.getPokemonOfInterest().contains("all");
-        }
-    }
 }
