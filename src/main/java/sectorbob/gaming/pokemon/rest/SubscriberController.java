@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import sectorbob.gaming.pokemon.model.Subscriber;
 import sectorbob.gaming.pokemon.repo.SubscriberRepository;
+import sectorbob.gaming.pokemon.rest.exception.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class SubscriberController {
     public Subscriber createSubscriber(@RequestBody Subscriber subscriber) {
 
         if(subscriberRepository.exists(subscriber.getUsername())) {
-            throw new RuntimeException("user already exists");
+            throw new ResourceNotFoundException("user already exists");
         }
         return subscriberRepository.save(subscriber);
     }
@@ -38,7 +39,7 @@ public class SubscriberController {
                                               @RequestBody List<String> pokemon) {
         Subscriber subscriber = subscriberRepository.findByUsername(username);
         if(subscriber == null) {
-            throw new RuntimeException("username not found");
+            throw new ResourceNotFoundException("username not found");
         }
         subscriber.setPokemonOfInterest(pokemon);
         subscriberRepository.save(subscriber);
@@ -50,7 +51,7 @@ public class SubscriberController {
                                                 @RequestBody List<String> locations) {
         Subscriber subscriber = subscriberRepository.findByUsername(username);
         if(subscriber == null) {
-            throw new RuntimeException("username not found");
+            throw new ResourceNotFoundException("username not found");
         }
         subscriber.setLocationsOfInterest(locations);
         subscriberRepository.save(subscriber);
