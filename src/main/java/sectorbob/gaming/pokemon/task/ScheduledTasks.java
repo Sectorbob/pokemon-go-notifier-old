@@ -30,6 +30,8 @@ import sectorbob.gaming.pokemon.repo.SubscriberRepository;
 import sectorbob.gaming.pokemon.repo.WildPokemonRepository;
 import sectorbob.gaming.pokemon.sms.EmailClient;
 
+import javax.mail.MessagingException;
+
 @Component
 public class ScheduledTasks {
 
@@ -43,9 +45,6 @@ public class ScheduledTasks {
 
     @Autowired
     SoughtAfterPokemonRepository soughtAfterPokemonRepository;
-
-    @Autowired
-    EmailClient emailClient;
 
     @Autowired
     AppConfig appConfig;
@@ -81,7 +80,7 @@ public class ScheduledTasks {
                     for(Pokemon pokemon : findNearbyPokemon(local, location)) {
                         if( ! wildPokemonRepository.exists(pokemon.getEncounterId())) {
                             wildPokemonRepository.save(pokemon);
-                            LOG.debug("New Nearby Pokemon: " + pokemon + " Distance from Center: " + distance(location.getLatitude(),pokemon.getLat(),
+                            LOG.info("New Nearby Pokemon: " + pokemon + " Distance from Center: " + distance(location.getLatitude(), pokemon.getLat(),
                                     location.getLongitude(), pokemon.getLng(), 0, 0) + "m");
                         }
                     }
@@ -123,6 +122,15 @@ public class ScheduledTasks {
 
     @Scheduled(fixedRate = 5000)
     public void detectNewSoughtPokemon() throws TwilioRestException {
+        // Creating a new client on each iteration
+        EmailClient emailClient;
+        try {
+            emailClient = new EmailClient(appConfig.getEmail().getUser(), appConfig.getEmail().getPassword());
+        } catch (MessagingException e) {
+            LOG.error("Error Creating Email Client", e);
+            return;
+        }
+
         for(Pokemon pokemon : wildPokemonRepository.findByExpired(false)) {
             // Check all active pokemon except for ignored pokemon
 
