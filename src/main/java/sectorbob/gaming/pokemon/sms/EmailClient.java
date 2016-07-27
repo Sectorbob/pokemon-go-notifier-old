@@ -2,6 +2,7 @@ package sectorbob.gaming.pokemon.sms;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import sectorbob.gaming.pokemon.model.Pokemon;
 import sectorbob.gaming.pokemon.model.Subscriber;
 import sectorbob.gaming.pokemon.util.Util;
@@ -12,6 +13,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import java.io.PrintStream;
 import java.util.Properties;
 
 /**
@@ -20,6 +22,7 @@ import java.util.Properties;
 public class EmailClient {
 
     private static Logger LOG = LoggerFactory.getLogger(EmailClient.class);
+    private PrintStream loggingPrintStream;
 
     private String fromEmail;
     private String username;
@@ -43,6 +46,8 @@ public class EmailClient {
         props.put("mail.smtp.port", "587");
         props.put("mail.smtp.auth", "true");
 
+        loggingPrintStream = new PrintStream(new LoggingOutputStream(LOG, Level.DEBUG));
+
 
         Authenticator auth = new Authenticator() {
             //override the getPasswordAuthentication method
@@ -51,11 +56,18 @@ public class EmailClient {
             }
         };
 
-        session = Session.getDefaultInstance(props, auth);
+        session = Session.getInstance(props, auth);
 
         transport = session.getTransport("smtp");
 
         transport.connect("smtp.gmail.com", username, password);
+
+        configureLogger(session);
+    }
+
+    public void configureLogger(Session session) {
+        session.setDebugOut(loggingPrintStream);
+        session.setDebug(true);
     }
 
     public void send(Pokemon pokemon, Subscriber subscriber) {
