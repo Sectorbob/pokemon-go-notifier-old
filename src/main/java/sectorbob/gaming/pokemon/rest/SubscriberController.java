@@ -25,7 +25,7 @@ public class SubscriberController {
         return subscriber;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    //@RequestMapping(method = RequestMethod.POST)
     public Subscriber createSubscriber(@RequestBody Subscriber subscriber) {
 
         if(subscriberRepository.exists(subscriber.getUsername())) {
