@@ -1,5 +1,7 @@
 package sectorbob.gaming.pokemon.sms;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sectorbob.gaming.pokemon.model.Pokemon;
 import sectorbob.gaming.pokemon.model.Subscriber;
 import sectorbob.gaming.pokemon.util.Util;
@@ -16,6 +18,8 @@ import java.util.Properties;
  * Created by ltm688 on 7/26/16.
  */
 public class EmailClient {
+
+    private static Logger LOG = LoggerFactory.getLogger(EmailClient.class);
 
     private String fromEmail;
     private String username;
@@ -60,7 +64,7 @@ public class EmailClient {
 
         String email =  getEmailForContact(subscriber.getContact(), subscriber.getCarrier());
 
-        System.out.println("Notifying " + email + " about " + pokemon);
+        LOG.info("Notifying " + email + " about " + pokemon);
 
         send("", message, email);
     }
@@ -103,11 +107,9 @@ public class EmailClient {
 
 
         } catch (AddressException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.error("An error occurred sending an email to address " + recipient, e);
         } catch (MessagingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.error("Unable to send email to " + recipient);
         }
     }
 
@@ -125,6 +127,7 @@ public class EmailClient {
             case "CRICKET":
                 return contact + "@sms.mycricket.com";
             default:
+                LOG.info("Contact ("+contact+") has no carrier. Attempting to do plain email..");
                 return contact;
         }
     }
