@@ -16,6 +16,8 @@ import com.pokegoapi.exceptions.RemoteServerException;
 import com.twilio.sdk.TwilioRestException;
 import okhttp3.OkHttpClient;
 import org.joda.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,8 @@ import sectorbob.gaming.pokemon.sms.EmailClient;
 
 @Component
 public class ScheduledTasks {
+
+    private static Logger LOG = LoggerFactory.getLogger(ScheduledTasks.class);
 
     @Autowired
     SubscriberRepository subscriberRepository;
@@ -55,7 +59,7 @@ public class ScheduledTasks {
         login = new GoogleLogin(httpClient);
         go = new PokemonGo(login.login(), httpClient);
 
-        System.out.println("Username: " + go.getPlayerProfile().getUsername());
+        LOG.info("Username: " + go.getPlayerProfile().getUsername());
     }
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -68,7 +72,7 @@ public class ScheduledTasks {
             if(local.getEnabled()) {
                 for (AppConfig.Location location : local.getLocations()) {
 
-                    System.out.println("Checking Location: " + location.getName() + " | " + location.getLatitude() +
+                    LOG.info("Checking Location: " + location.getName() + " | " + location.getLatitude() +
                             "," + location.getLongitude());
 
                     go.setLocation(location.getLatitude(), location.getLongitude(), location.getAltitude());
@@ -77,7 +81,8 @@ public class ScheduledTasks {
                     for(Pokemon pokemon : findNearbyPokemon(local, location)) {
                         if( ! wildPokemonRepository.exists(pokemon.getEncounterId())) {
                             wildPokemonRepository.save(pokemon);
-                            System.out.println("New Nearby Pokemon: " + pokemon);
+                            LOG.debug("New Nearby Pokemon: " + pokemon + " Distance from Center: " + distance(location.getLatitude(),pokemon.getLat(),
+                                    location.getLongitude(), pokemon.getLng(), 0, 0) + "m");
                         }
                     }
                 }
@@ -87,13 +92,13 @@ public class ScheduledTasks {
         long endMillis = System.currentTimeMillis();
 
         Duration cycleDuration = new Duration(endMillis-startMillis);
-        System.out.println("Cycle Duration: " + cycleDuration.getStandardMinutes() + "m "
+        LOG.info("Cycle Duration: " + cycleDuration.getStandardMinutes() + "m "
                 + cycleDuration.getStandardSeconds() % 60 + "s");
 
-        System.out.println("Catchable Pokemon:");
+        LOG.debug("Catchable Pokemon:");
         for(Pokemon pokemon : wildPokemonRepository.findByExpired(false)) {
             if(! ignorePokemon(pokemon))
-                System.out.println(pokemon);
+                LOG.debug(pokemon.toString());
         }
 
     }
@@ -112,7 +117,7 @@ public class ScheduledTasks {
         // Update database
         if(!expiredPokemon.isEmpty()) {
             wildPokemonRepository.save(expiredPokemon);
-            System.out.println("Removed " + expiredPokemon.size() + " expired pokemon.");
+            LOG.info("Removed " + expiredPokemon.size() + " expired pokemon.");
         }
     }
 
@@ -143,17 +148,6 @@ public class ScheduledTasks {
         }
     }
     // Helper methods
-
-    public List<Pokemon> getNearbyPokemon(AppConfig.Local local) throws LoginFailedException, RemoteServerException {
-        List<Pokemon> nearbyPokemon = new ArrayList<Pokemon>();
-
-        for (NearbyPokemonOuterClass.NearbyPokemon pokemon : go.getMap().getMapObjects().getNearbyPokemons()) {
-            Pokemon pokemon1 = new Pokemon(pokemon, local.getName());
-            nearbyPokemon.add(pokemon1);
-            //System.out.println("Nearby Distance: " + pokemon.getDistanceInMeters() + "m");
-        }
-        return nearbyPokemon;
-    }
 
     public List<Pokemon> getWildPokemon(AppConfig.Local local, AppConfig.Location location) throws LoginFailedException, RemoteServerException {
         go.setLocation(location.getLatitude(), location.getLongitude(), location.getAltitude());
@@ -250,7 +244,6 @@ public class ScheduledTasks {
         for(Pokemon wildPokemon : getWildPokemon(local, location)) {
             if (!nearbyPokemon.contains(wildPokemon)) {
                 nearbyPokemon.add(wildPokemon);
-                //System.out.println("Added " + wildPokemon.getName() + " from " + area + " in " + local.getName());
             }
         }
     }
