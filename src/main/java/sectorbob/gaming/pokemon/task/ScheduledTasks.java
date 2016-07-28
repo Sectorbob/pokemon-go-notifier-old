@@ -56,15 +56,31 @@ public class ScheduledTasks {
     public ScheduledTasks() throws LoginFailedException, RemoteServerException {
         httpClient = new OkHttpClient();
         login = new GoogleLogin(httpClient);
-        go = new PokemonGo(login.login(), httpClient);
+    }
 
-        LOG.info("Username: " + go.getPlayerProfile().getUsername());
+    private void initializeGo() throws LoginFailedException, RemoteServerException {
+        if(go == null) {
+
+            try {
+                go = new PokemonGo(login.login(), httpClient);
+            } catch (LoginFailedException e) {
+                LOG.error("Login failed when attempting to initialize go client", e);
+                throw e;
+            } catch (RemoteServerException e) {
+                LOG.error("Unable to connect to Pokemon go servers", e);
+                throw e;
+            }
+            LOG.info("Username: " + go.getPlayerProfile().getUsername());
+        }
     }
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     @Scheduled(fixedRate = 60000)
     public void scanForNewPokemon() throws LoginFailedException, RemoteServerException {
+        // Create go client if not exists already
+        initializeGo();
+
         long startMillis = System.currentTimeMillis();
 
         for(AppConfig.Local local : appConfig.getLocals()) {
